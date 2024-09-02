@@ -1,0 +1,27 @@
+linters:
+  enable-all: true
+  disable:
+    - gomnd
+    - execinquery
+    - exhaustruct
+    - exportloopref
+    - paralleltest
+    - tagliatelle
+    - testpackage
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - exhaustruct
+        - lll
+        - varnamelen
+linters-settings:
+  depguard:
+    rules:
+      main:
+        allow:
+          - $gostd
+          - github.com/aws/aws-sdk-go-v2/aws
+          - github.com/aws/aws-sdk-go-v2/config
+          - github.com/pkg/browser
+          - github.com/wakeful/aws-console/pkg/console
