@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,8 +21,13 @@ type response struct {
 
 var errInvalidCred = errors.New("invalid credentials")
 
-func getAuthToken(ctx context.Context, payload string) (string, error) {
-	tokenURL, err := url.Parse(federationURL)
+func getAuthToken(ctx context.Context, payload string, region string) (string, error) {
+	fURL := federationURL
+	if strings.HasPrefix(region, "cn-") {
+		fURL = federationCNURL
+	}
+
+	tokenURL, err := url.Parse(fURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse url: %w", err)
 	}

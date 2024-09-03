@@ -19,7 +19,7 @@ func Test_fmtURL(t *testing.T) {
 			args: args{
 				token: "Fizz",
 			},
-			want:    "https://signin.aws.amazon.com/federation?Action=login&Destination=https%3A%2F%2Feu-west-1.console.aws.amazon.com%2F&Issuer=awslogin&SigninToken=Fizz",
+			want:    "https://signin.aws.amazon.com/federation?Action=login&Destination=https%3A%2F%2Feu-west-1.console.aws.amazon.com%2F&Issuer=aws-console&SigninToken=Fizz",
 			wantErr: false,
 		},
 		{
@@ -28,7 +28,16 @@ func Test_fmtURL(t *testing.T) {
 				token:        "buzz",
 				targetRegion: "eu-west-2",
 			},
-			want:    "https://signin.aws.amazon.com/federation?Action=login&Destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2F&Issuer=awslogin&SigninToken=buzz",
+			want:    "https://signin.aws.amazon.com/federation?Action=login&Destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2F&Issuer=aws-console&SigninToken=buzz",
+			wantErr: false,
+		},
+		{
+			name: "let's try a CN region",
+			args: args{
+				token:        "helloCN,",
+				targetRegion: "cn-north-1",
+			},
+			want:    "https://signin.amazonaws.cn/federation?Action=login&Destination=https%3A%2F%2Fcn-north-1.console.amazonaws.cn%2F&Issuer=aws-console&SigninToken=helloCN%2C",
 			wantErr: false,
 		},
 		{

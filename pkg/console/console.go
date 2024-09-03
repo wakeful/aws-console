@@ -12,33 +12,39 @@ import (
 )
 
 const (
-	DefaultRegion        = "eu-west-1"
-	federationURL string = "https://signin.aws.amazon.com/federation"
+	DefaultRegion          = "eu-west-1"
+	federationURL   string = "https://signin.aws.amazon.com/federation"
+	federationCNURL string = "https://signin.amazonaws.cn/federation"
 )
 
 var errMissingAuthToken = errors.New("missing auth token")
 
-func fmtURL(token, targetRegion string) (string, error) {
+func fmtURL(token, region string) (string, error) {
 	if strings.TrimSpace(token) == "" {
 		return "", errMissingAuthToken
 	}
 
-	userURL, err := url.Parse(federationURL)
+	var (
+		consoleURL = "console.aws.amazon.com"
+		fURL       = federationURL
+	)
+
+	if strings.HasPrefix(region, "cn-") {
+		consoleURL = "console.amazonaws.cn"
+		fURL = federationCNURL
+	}
+
+	userURL, err := url.Parse(fURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse federation URL: %w", err)
 	}
 
-	region := DefaultRegion
-	if targetRegion != "" {
-		region = targetRegion
-	}
-
-	slog.Debug("using region", slog.String("region", region))
+	slog.Debug("using console", slog.String("url", consoleURL))
 
 	parameters := url.Values{}
 	parameters.Add("Action", "login")
-	parameters.Add("Issuer", "awslogin")
-	parameters.Add("Destination", fmt.Sprintf("https://%s.console.aws.amazon.com/", region))
+	parameters.Add("Issuer", "aws-console")
+	parameters.Add("Destination", fmt.Sprintf("https://%s.%s/", region, consoleURL))
 	parameters.Add("SigninToken", token)
 
 	userURL.RawQuery = parameters.Encode()
@@ -52,7 +58,7 @@ func GetSignInURL(ctx context.Context, sess aws.Config, region, policyARN string
 		return "", fmt.Errorf("failed to build payload: %w", err)
 	}
 
-	token, err := getAuthToken(ctx, payload)
+	token, err := getAuthToken(ctx, payload, region)
 	if err != nil {
 		return "", fmt.Errorf("failed to get auth token: %w", err)
 	}

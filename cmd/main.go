@@ -13,7 +13,7 @@ import (
 
 func main() {
 	policy := flag.String("policy", "arn:aws:iam::aws:policy/AdministratorAccess", "fall back policy ARN")
-	region := flag.String("region", console.DefaultRegion, "AWS Region")
+	region := flag.String("region", "", "AWS Region")
 	debug := flag.Bool("debug", false, "Enable debug logging")
 	flag.Parse()
 
@@ -31,13 +31,13 @@ func main() {
 			ReplaceAttr: nil,
 		})))
 
-	sess, awsErr := console.GetAWSConfig(ctx)
+	sess, cRegion, awsErr := console.GetAWSConfig(ctx, *region)
 	if awsErr != nil {
 		slog.Error("missing aws credentials", slog.String("error", awsErr.Error()))
 		os.Exit(1)
 	}
 
-	consoleURL, awsErr := console.GetSignInURL(ctx, *sess, *region, *policy)
+	consoleURL, awsErr := console.GetSignInURL(ctx, *sess, cRegion, *policy)
 	if awsErr != nil {
 		slog.Error("failed to construct signIn URL", slog.String("error", awsErr.Error()))
 		os.Exit(1)
