@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	policy := flag.String("policy", "arn:aws:iam::aws:policy/AdministratorAccess", "fall back policy ARN")
+	policy := flag.String("policy", "", "assume policy arn, e.q. arn:aws:iam::aws:policy/AdministratorAccess")
 	region := flag.String("region", "", "AWS Region")
 	debug := flag.Bool("debug", false, "Enable debug logging")
 	flag.Parse()

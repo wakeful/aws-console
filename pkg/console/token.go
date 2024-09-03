@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -100,11 +101,21 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 
 		const duration = 2520
 
-		fedToken, errGetFedToken := stsClient.GetFederationToken(ctx, &sts.GetFederationTokenInput{
+		params := &sts.GetFederationTokenInput{
 			Name:            aws.String("aws-console"),
 			DurationSeconds: aws.Int32(duration),
-			PolicyArns:      []types.PolicyDescriptorType{{Arn: aws.String(policyARN)}},
-		})
+		}
+
+		if policyARN != "" {
+			params.PolicyArns = []types.PolicyDescriptorType{{Arn: aws.String(policyARN)}}
+			slog.Debug("using user provided policy", slog.String("arn", policyARN))
+		} else {
+			params.Policy = aws.String(`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"*","Resource":"*"}]}`)
+
+			slog.Debug("using default assume anything policy")
+		}
+
+		fedToken, errGetFedToken := stsClient.GetFederationToken(ctx, params)
 		if errGetFedToken != nil {
 			return "", fmt.Errorf("failed to get federation token for custom role: %w", errGetFedToken)
 		}
