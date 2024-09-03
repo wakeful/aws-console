@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	policy := flag.String("policy", "arn:aws:iam::aws:policy/AdministratorAccess", "fall back policy ARN")
 	region := flag.String("region", console.DefaultRegion, "AWS Region")
 	debug := flag.Bool("debug", false, "Enable debug logging")
 	flag.Parse()
@@ -36,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	consoleURL, awsErr := console.GetSignInURL(ctx, *sess, *region)
+	consoleURL, awsErr := console.GetSignInURL(ctx, *sess, *region, *policy)
 	if awsErr != nil {
 		slog.Error("failed to construct signIn URL", slog.String("error", awsErr.Error()))
 		os.Exit(1)

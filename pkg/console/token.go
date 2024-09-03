@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 
 type response struct {
@@ -67,20 +69,45 @@ func getAuthToken(ctx context.Context, payload string) (string, error) {
 	return output.Token, nil
 }
 
-func buildPayload(ctx context.Context, sess aws.Config) (string, error) {
+func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (string, error) {
 	token, err := sess.Credentials.Retrieve(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve credentials: %w", err)
 	}
 
-	data := struct {
+	type d struct {
 		AccessKeyID     string `json:"sessionId"`
 		SecretAccessKey string `json:"sessionKey"`
 		SessionToken    string `json:"sessionToken"`
-	}{
-		AccessKeyID:     token.AccessKeyID,
-		SecretAccessKey: token.SecretAccessKey,
-		SessionToken:    token.SessionToken,
+	}
+
+	var data d
+
+	if token.CanExpire {
+		data = d{
+			AccessKeyID:     token.AccessKeyID,
+			SecretAccessKey: token.SecretAccessKey,
+			SessionToken:    token.SessionToken,
+		}
+	} else {
+		stsClient := sts.NewFromConfig(sess)
+
+		const duration = 2520
+
+		fedToken, errGetFedToken := stsClient.GetFederationToken(ctx, &sts.GetFederationTokenInput{
+			Name:            aws.String("aws-console"),
+			DurationSeconds: aws.Int32(duration),
+			PolicyArns:      []types.PolicyDescriptorType{{Arn: aws.String(policyARN)}},
+		})
+		if errGetFedToken != nil {
+			return "", fmt.Errorf("failed to get federation token for custom role: %w", errGetFedToken)
+		}
+
+		data = d{
+			AccessKeyID:     *fedToken.Credentials.AccessKeyId,
+			SecretAccessKey: *fedToken.Credentials.SecretAccessKey,
+			SessionToken:    *fedToken.Credentials.SessionToken,
+		}
 	}
 
 	payload, err := json.Marshal(&data)

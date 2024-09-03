@@ -46,8 +46,8 @@ func fmtURL(token, targetRegion string) (string, error) {
 	return userURL.String(), nil
 }
 
-func GetSignInURL(ctx context.Context, sess aws.Config, region string) (string, error) {
-	payload, err := buildPayload(ctx, sess)
+func GetSignInURL(ctx context.Context, sess aws.Config, region, policyARN string) (string, error) {
+	payload, err := buildPayload(ctx, sess, policyARN)
 	if err != nil {
 		return "", fmt.Errorf("failed to build payload: %w", err)
 	}
