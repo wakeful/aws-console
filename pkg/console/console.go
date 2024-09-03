@@ -24,6 +24,10 @@ func fmtURL(token, region string) (string, error) {
 		return "", errMissingAuthToken
 	}
 
+	if region == "" {
+		region = DefaultRegion
+	}
+
 	var (
 		consoleURL = "console.aws.amazon.com"
 		fURL       = federationURL
