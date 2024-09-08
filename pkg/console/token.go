@@ -101,8 +101,13 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 
 		const duration = 2520
 
+		sessionID, errGetSessionName := getSessionName(ctx, stsClient)
+		if errGetSessionName != nil {
+			return "", fmt.Errorf("failed to get session name: %w", errGetSessionName)
+		}
+
 		params := &sts.GetFederationTokenInput{
-			Name:            aws.String("aws-console"),
+			Name:            aws.String(sessionID),
 			DurationSeconds: aws.Int32(duration),
 		}
 
@@ -133,4 +138,18 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 	}
 
 	return string(payload), nil
+}
+
+func getSessionName(ctx context.Context, stsClient *sts.Client) (string, error) {
+	callerIdentity, errCallerIdentity := stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	if errCallerIdentity != nil {
+		return "", fmt.Errorf("failed to get caller identity: %w", errCallerIdentity)
+	}
+
+	sessionID := "aws-console"
+	if *callerIdentity.Arn != "" {
+		sessionID = strings.Split(*callerIdentity.Arn, "/")[1]
+	}
+
+	return sessionID, nil
 }
