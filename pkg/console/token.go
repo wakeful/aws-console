@@ -88,15 +88,13 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 		SessionToken    string `json:"sessionToken"`
 	}
 
-	var data d
+	data := d{
+		AccessKeyID:     token.AccessKeyID,
+		SecretAccessKey: token.SecretAccessKey,
+		SessionToken:    token.SessionToken,
+	}
 
-	if token.CanExpire {
-		data = d{
-			AccessKeyID:     token.AccessKeyID,
-			SecretAccessKey: token.SecretAccessKey,
-			SessionToken:    token.SessionToken,
-		}
-	} else {
+	if !token.CanExpire {
 		stsClient := sts.NewFromConfig(sess)
 
 		const duration = 2520

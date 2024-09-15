@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/pkg/browser"
 	"github.com/wakeful/aws-console/pkg/console"
@@ -31,21 +32,35 @@ func main() {
 			ReplaceAttr: nil,
 		})))
 
+	if err := openConsole(ctx, region, policy); err != nil {
+		slog.Error("missing aws credentials", slog.String("error", err.Error()))
+
+		os.Exit(1)
+	}
+}
+
+func openConsole(ctx context.Context, region *string, policy *string) error {
 	sess, cRegion, awsErr := console.GetAWSConfig(ctx, *region)
 	if awsErr != nil {
-		slog.Error("missing aws credentials", slog.String("error", awsErr.Error()))
-		os.Exit(1)
+		return fmt.Errorf("missing aws credentials: %w", awsErr)
 	}
 
 	consoleURL, awsErr := console.GetSignInURL(ctx, *sess, cRegion, *policy)
 	if awsErr != nil {
-		slog.Error("failed to construct signIn URL", slog.String("error", awsErr.Error()))
-		os.Exit(1)
+		return fmt.Errorf("failed to construct signIn URL: %w", awsErr)
 	}
+
+	_ = browser.OpenURL("https://signin.aws.amazon.com/oauth?Action=logout")
+
+	const timeout = 2
+
+	time.Sleep(timeout * time.Second)
 
 	if err := browser.OpenURL(consoleURL); err != nil {
-		slog.Error("failed to open browser", slog.String("error", err.Error()))
-
 		_, _ = fmt.Fprintf(os.Stdout, "Please open the following URL in your browser: %s\n", consoleURL)
+
+		return fmt.Errorf("please open the following URL in your browser: %w", err)
 	}
+
+	return nil
 }
