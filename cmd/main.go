@@ -12,13 +12,14 @@ import (
 	"github.com/wakeful/aws-console/pkg/console"
 )
 
+var version = "dev"
+
 func main() {
 	policy := flag.String("policy", "", "assume policy arn, e.q. arn:aws:iam::aws:policy/AdministratorAccess")
 	region := flag.String("region", "", "AWS Region")
 	debug := flag.Bool("debug", false, "Enable debug logging")
+	showVersion := flag.Bool("version", false, "Show version")
 	flag.Parse()
-
-	ctx := context.Background()
 
 	level := slog.LevelInfo
 	if *debug {
@@ -31,6 +32,13 @@ func main() {
 			Level:       level,
 			ReplaceAttr: nil,
 		})))
+
+	if *showVersion {
+		slog.Info("aws-console", slog.String("version", version))
+		os.Exit(0)
+	}
+
+	ctx := context.Background()
 
 	if err := openConsole(ctx, region, policy); err != nil {
 		slog.Error("missing aws credentials", slog.String("error", err.Error()))
