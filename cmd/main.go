@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pkg/browser"
@@ -58,7 +59,11 @@ func openConsole(ctx context.Context, region *string, policy *string) error {
 		return fmt.Errorf("failed to construct signIn URL: %w", awsErr)
 	}
 
-	_ = browser.OpenURL("https://signin.aws.amazon.com/oauth?Action=logout")
+	if strings.HasPrefix(cRegion, "cn-") {
+		_ = browser.OpenURL("https://signin.amazonaws.cn/oauth?Action=logout")
+	} else {
+		_ = browser.OpenURL("https://signin.aws.amazon.com/oauth?Action=logout")
+	}
 
 	const timeout = 2
 

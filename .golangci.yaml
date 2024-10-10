@@ -5,15 +5,15 @@ linters:
     - execinquery
     - exhaustruct
     - exportloopref
-    - paralleltest
     - tagliatelle
-    - testpackage
 issues:
   exclude-rules:
     - path: _test.go
       linters:
         - exhaustruct
         - lll
+        - paralleltest
+        - testpackage
         - varnamelen
 linters-settings:
   depguard:
