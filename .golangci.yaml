@@ -1,29 +1,38 @@
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-    - gomnd
-    - execinquery
-    - exhaustruct
-    - exportloopref
-    - tagliatelle
-issues:
-  exclude-rules:
-    - path: _test.go
-      linters:
-        - exhaustruct
-        - lll
-        - paralleltest
-        - testpackage
-        - varnamelen
-linters-settings:
-  depguard:
+    - wsl # deprecated (since v2.2.0)
+  settings:
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com/aws/aws-sdk-go-v2/aws
+            - github.com/aws/aws-sdk-go-v2/config
+            - github.com/aws/aws-sdk-go-v2/service/sts
+            - github.com/aws/aws-sdk-go-v2/service/sts/types
+            - github.com/pkg/browser
+            - github.com/wakeful/aws-console/pkg/console
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+  exclusions:
+    generated: disable
     rules:
-      main:
-        allow:
-          - $gostd
-          - github.com/aws/aws-sdk-go-v2/aws
-          - github.com/aws/aws-sdk-go-v2/config
-          - github.com/aws/aws-sdk-go-v2/service/sts
-          - github.com/aws/aws-sdk-go-v2/service/sts/types
-          - github.com/pkg/browser
-          - github.com/wakeful/aws-console/pkg/console
+      - path: _test.go
+        linters:
+          - exhaustruct
+          - funlen
+          - lll
+          - testpackage
+          - varnamelen
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines

@@ -1,3 +1,6 @@
+// Copyright 2025 variHQ OÜ
+// SPDX-License-Identifier: BSD-3-Clause
+
 package console
 
 import (
@@ -12,6 +15,7 @@ import (
 )
 
 const (
+	// DefaultRegion defines the default AWS region to be used: "eu-west-1".
 	DefaultRegion          = "eu-west-1"
 	federationURL   string = "https://signin.aws.amazon.com/federation"
 	federationCNURL string = "https://signin.amazonaws.cn/federation"
@@ -56,6 +60,7 @@ func fmtURL(token, region string) (string, error) {
 	return userURL.String(), nil
 }
 
+// GetSignInURL generates a sign-in URL for the AWS Management Console using temporary credentials.
 func GetSignInURL(ctx context.Context, sess aws.Config, region, policyARN string) (string, error) {
 	payload, err := buildPayload(ctx, sess, policyARN)
 	if err != nil {

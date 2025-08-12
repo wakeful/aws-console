@@ -1,3 +1,6 @@
+// Copyright 2025 variHQ OÜ
+// SPDX-License-Identifier: BSD-3-Clause
+
 package main
 
 import (
@@ -16,7 +19,11 @@ import (
 var version = "dev"
 
 func main() {
-	policy := flag.String("policy", "", "assume policy arn, e.q. arn:aws:iam::aws:policy/AdministratorAccess")
+	policy := flag.String(
+		"policy",
+		"",
+		"assume policy arn, e.q. arn:aws:iam::aws:policy/AdministratorAccess",
+	)
 	region := flag.String("region", "", "AWS Region")
 	debug := flag.Bool("debug", false, "Enable debug logging")
 	showVersion := flag.Bool("version", false, "Show version")
@@ -41,7 +48,8 @@ func main() {
 
 	ctx := context.Background()
 
-	if err := openConsole(ctx, region, policy); err != nil {
+	err := openConsole(ctx, region, policy)
+	if err != nil {
 		slog.Error("missing aws credentials", slog.String("error", err.Error()))
 
 		os.Exit(1)
@@ -69,8 +77,13 @@ func openConsole(ctx context.Context, region *string, policy *string) error {
 
 	time.Sleep(timeout * time.Second)
 
-	if err := browser.OpenURL(consoleURL); err != nil {
-		_, _ = fmt.Fprintf(os.Stdout, "Please open the following URL in your browser: %s\n", consoleURL)
+	err := browser.OpenURL(consoleURL)
+	if err != nil {
+		_, _ = fmt.Fprintf(
+			os.Stdout,
+			"Please open the following URL in your browser: %s\n",
+			consoleURL,
+		)
 
 		return fmt.Errorf("please open the following URL in your browser: %w", err)
 	}

@@ -1,3 +1,6 @@
+// Copyright 2025 variHQ OÜ
+// SPDX-License-Identifier: BSD-3-Clause
+
 package console
 
 import (
@@ -9,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
+// GetAWSConfig loads AWS SDK config with the given or default region, returning the config, region, and any error.
 func GetAWSConfig(ctx context.Context, region string) (*aws.Config, string, error) {
 	sess, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -19,12 +23,18 @@ func GetAWSConfig(ctx context.Context, region string) (*aws.Config, string, erro
 
 	if region != "" {
 		sess.Region = region
-		slog.Debug("setting region to user selected one", "region", slog.String("region", sess.Region))
+		slog.Debug(
+			"setting region to user selected one",
+			slog.String("region", sess.Region),
+		)
 	}
 
 	if sess.Region == "" {
 		sess.Region = DefaultRegion
-		slog.Debug("no region found failing back to default", "region", slog.String("region", sess.Region))
+		slog.Debug(
+			"no region found failing back to default",
+			slog.String("region", sess.Region),
+		)
 	}
 
 	slog.Debug("using region", "region", sess.Region)

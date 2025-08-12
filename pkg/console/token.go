@@ -1,3 +1,6 @@
+// Copyright 2025 variHQ OÜ
+// SPDX-License-Identifier: BSD-3-Clause
+
 package console
 
 import (
@@ -17,7 +20,7 @@ import (
 )
 
 type response struct {
-	Token string `json:"SigninToken"`
+	Token string `json:"SigninToken"` //nolint:tagliatelle
 }
 
 var errInvalidCred = errors.New("invalid credentials")
@@ -51,7 +54,7 @@ func getAuthToken(ctx context.Context, payload string, region string) (string, e
 
 	var (
 		resp       *http.Response
-		httpClient = &http.Client{
+		httpClient = &http.Client{ //nolint:exhaustruct
 			Timeout: timeout,
 		}
 	)
@@ -61,22 +64,26 @@ func getAuthToken(ctx context.Context, payload string, region string) (string, e
 		return "", fmt.Errorf("error getting signin token: %w", err)
 	}
 
-	if resp != nil {
-		defer resp.Body.Close()
-	}
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", errInvalidCred
 	}
 
-	if errDecodeJSON := json.NewDecoder(resp.Body).Decode(&output); errDecodeJSON != nil {
+	errDecodeJSON := json.NewDecoder(resp.Body).Decode(&output)
+	if errDecodeJSON != nil {
 		return "", fmt.Errorf("error decoding token: %w", errDecodeJSON)
 	}
 
 	return output.Token, nil
 }
 
-func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (string, error) {
+//nolint:funlen
+func buildPayload(
+	ctx context.Context,
+	sess aws.Config,
+	policyARN string,
+) (string, error) {
 	token, err := sess.Credentials.Retrieve(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve credentials: %w", err)
@@ -104,7 +111,7 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 			return "", fmt.Errorf("failed to get session name: %w", errGetSessionName)
 		}
 
-		params := &sts.GetFederationTokenInput{
+		params := &sts.GetFederationTokenInput{ //nolint:exhaustruct
 			Name:            aws.String(sessionID),
 			DurationSeconds: aws.Int32(duration),
 		}
@@ -120,7 +127,10 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 
 		fedToken, errGetFedToken := stsClient.GetFederationToken(ctx, params)
 		if errGetFedToken != nil {
-			return "", fmt.Errorf("failed to get federation token for custom role: %w", errGetFedToken)
+			return "", fmt.Errorf(
+				"failed to get federation token for custom role: %w",
+				errGetFedToken,
+			)
 		}
 
 		data = d{
@@ -139,7 +149,10 @@ func buildPayload(ctx context.Context, sess aws.Config, policyARN string) (strin
 }
 
 func getSessionName(ctx context.Context, stsClient *sts.Client) (string, error) {
-	callerIdentity, errCallerIdentity := stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	callerIdentity, errCallerIdentity := stsClient.GetCallerIdentity(
+		ctx,
+		&sts.GetCallerIdentityInput{},
+	)
 	if errCallerIdentity != nil {
 		return "", fmt.Errorf("failed to get caller identity: %w", errCallerIdentity)
 	}
