@@ -27,6 +27,7 @@ func main() {
 	region := flag.String("region", "", "AWS Region")
 	debug := flag.Bool("debug", false, "Enable debug logging")
 	showVersion := flag.Bool("version", false, "Show version")
+
 	flag.Parse()
 
 	level := slog.LevelInfo
