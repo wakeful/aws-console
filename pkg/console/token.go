@@ -59,7 +59,7 @@ func getAuthToken(ctx context.Context, payload string, region string) (string, e
 		}
 	)
 
-	resp, err = httpClient.Do(req)
+	resp, err = httpClient.Do(req) //#nosec G704
 	if err != nil {
 		return "", fmt.Errorf("error getting signin token: %w", err)
 	}
@@ -91,8 +91,8 @@ func buildPayload(
 
 	type d struct {
 		AccessKeyID     string `json:"sessionId"`
-		SecretAccessKey string `json:"sessionKey"`
-		SessionToken    string `json:"sessionToken"`
+		SecretAccessKey string `json:"sessionKey"`   //#nosec G117
+		SessionToken    string `json:"sessionToken"` //#nosec G117
 	}
 
 	data := d{
@@ -120,7 +120,9 @@ func buildPayload(
 			params.PolicyArns = []types.PolicyDescriptorType{{Arn: aws.String(policyARN)}}
 			slog.Debug("using user provided policy", slog.String("arn", policyARN))
 		} else {
-			params.Policy = aws.String(`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"*","Resource":"*"}]}`)
+			params.Policy = aws.String(
+				`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"*","Resource":"*"}]}`,
+			)
 
 			slog.Debug("using default assume anything policy")
 		}
