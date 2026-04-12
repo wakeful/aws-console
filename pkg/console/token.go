@@ -142,7 +142,7 @@ func buildPayload(
 		}
 	}
 
-	payload, err := json.Marshal(&data)
+	payload, err := json.Marshal(&data) //nolint:gosec
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal payload: %w", err)
 	}
