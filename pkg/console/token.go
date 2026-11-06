@@ -54,7 +54,7 @@ func getAuthToken(ctx context.Context, payload string, region string) (string, e
 
 	var (
 		resp       *http.Response
-		httpClient = &http.Client{ //nolint:exhaustruct
+		httpClient = &http.Client{ //nolint:exhaustruct_v5
 			Timeout: timeout,
 		}
 	)
@@ -111,7 +111,7 @@ func buildPayload(
 			return "", fmt.Errorf("failed to get session name: %w", errGetSessionName)
 		}
 
-		params := &sts.GetFederationTokenInput{ //nolint:exhaustruct
+		params := &sts.GetFederationTokenInput{ //nolint:exhaustruct_v5
 			Name:            aws.String(sessionID),
 			DurationSeconds: aws.Int32(duration),
 		}
